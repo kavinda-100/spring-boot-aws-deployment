@@ -12,27 +12,18 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Connect to EC2 and check user
+      - name: Deploy container on EC2
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
           port: ${{ secrets.EC2_PORT }}
-          script: whoami
-
-      - name: Set up dir if not exists
-        run: |
-          ssh -o StrictHostKeyChecking=no ec2-user@${{ secrets.EC2_HOST }} << 'EOF'
-            mkdir -p /home/ec2-user/spring-aws-deploy
-          EOF
-
-      - name: Deploy to EC2
-        run: |
-          ssh -o StrictHostKeyChecking=no ec2-user@${{ secrets.EC2_HOST }} << 'EOF'
-            cd /home/ec2-user/spring-aws-deploy
-            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/spring-aws-deploy:latest
-            docker stop spring-aws-deploy || true
-            docker rm spring-aws-deploy || true
-            docker run -d --name spring-aws-deploy -p 8080:8080 ${{ secrets.DOCKERHUB_USERNAME }}/spring-aws-deploy:latest
-          EOF
+          script: |
+            sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/spring-aws-deploy:latest
+            sudo docker rm -f spring-aws-deploy || true
+            sudo docker run -d \
+              --name spring-aws-deploy \
+              --restart unless-stopped \
+              -p 8080:8080 \
+              ${{ secrets.DOCKERHUB_USERNAME }}/spring-aws-deploy:latest
