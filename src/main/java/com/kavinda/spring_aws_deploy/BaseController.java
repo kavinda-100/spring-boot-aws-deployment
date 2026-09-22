@@ -23,7 +23,7 @@ public class BaseController {
         HashMap<String, String> response = new HashMap<>();
 
         response.put("status", "UP");
-        response.put("message", "Service is running on port 8080");
+        response.put("message", "Service is running");
         response.put("timestamp", String.valueOf(Instant.now()));
 
         return ResponseEntity.ok(response);
