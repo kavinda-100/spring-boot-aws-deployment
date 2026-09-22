@@ -1,11 +1,14 @@
 name: Deploy to AWS EC2
 
 on:
-  push:
-    branches: [ "main" ]
+  workflow_run:
+    workflows: ["build the docker image and push to docker hub"]
+    types: [completed]
+    branches: [main]
 
 jobs:
   deploy:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
 
     steps:
